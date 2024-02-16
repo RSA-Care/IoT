@@ -1,42 +1,51 @@
-#include <Arduino.h>
-#include <HardwareSerial.h>
-#include <TinyGPSPlus.h>
-#include "dht22/dht_custom_header.h"
 
-// GPS Variable
-#define RX 16
-#define TX 17
+#include "package.h"
 
-HardwareSerial gps_serial(2);
 TinyGPSPlus gps;
 DHT22_class dht;
+SIM7600G modem;
 
 void setup()
 {
-  Serial.begin(115200);
-  gps_serial.begin(9600, SERIAL_8N2, RX, TX);
+  Serial.begin(defaultBaud);
+  Serial.println("\n=== > Setup Start < ===\n");
+  while (!modem.init(true) > 0)
+  {
+    Serial.println("Connection failed, restarting!");
+  }
+  modem.manualCommand();
 
-  Serial.println("Setup completed =====|");
+  delay(500);
+  Serial.println("\n|===== Setup completed =====|");
 }
 
 void loop()
 {
   // DHT22 code
-  dht.data();
+  auto dhtData = dht.getData();
 
   // GPS code
-  if (gps_serial.available() > 0)
-  {
-    gps.encode(gps_serial.read());
-    Serial.print("Latitude: ");
-    Serial.println(gps.location.lat());
-    Serial.print("Longitude: ");
-    Serial.println(gps.location.lng());
-  }
-  else
-  {
-    Serial.println("[ ! ] GPS Serial unavailable.");
-  }
+  // while (gpsSerial.available() > 0)
+  // {
+  //   if (gps.encode(gpsSerial.read()))
+  //   {
+  //     Serial.print("Latitude: ");
+  //     Serial.println(gps.location.lat());
+  //     Serial.print("Longitude: ");
+  //     Serial.println(gps.location.lng());
+  //     Serial.write(gpsSerial.read());
+  //   }
 
+  //   if (millis() > 5000 && gps.charsProcessed() < 10)
+  //   {
+  //     Serial.println(F("[ Neo 7m ] No GPS detected: check wiring."));
+  //   }
+
+  //   auto dhtData = dht.getData();
+
+  //   delay(5000);
+  // }
+
+  Serial.println("GPS Serial unavailable.");
   delay(5000);
 }

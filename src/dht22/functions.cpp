@@ -10,23 +10,36 @@ DHT22_class::DHT22_class()
   _dht.begin();
 }
 
-void DHT22_class::data()
+void DHT22_class::printDHT(String text)
 {
-  Serial.println("[ DHT22 ] Checking humidity, temperature, and heat index.");
+  Serial.print("[ DHT22 ] ");
+  Serial.println(text);
+  return;
+}
+
+DHT22_class::fData DHT22_class::getData()
+{
+  printDHT("Checking DHT22...");
   float humidity = _dht.readHumidity();
   float temperature = _dht.readTemperature();
 
   if (isnan(humidity) || isnan(temperature))
   {
-    Serial.println("[ DHT22 ] Failed to detect humidity and temperature.");
-    Serial.println("[ DHT22 ] Please check connections or DHT22 device.");
-    Serial.println("[ DHT22 ] Delaying for 10 second");
+    printDHT("DHT22 not found.");
+    printDHT("Please check wiring.");
+    printDHT("Delaying 10 second.");
+    data.success = false;
     delay(10000);
-    return;
+    return data;
   }
   else
   {
     float heatIndex = _dht.computeHeatIndex(temperature, humidity, false);
+    data.temperature = temperature;
+    data.humidity = humidity;
+    data.heatIndex = heatIndex;
+    data.success = true;
+
     Serial.println("[ DHT22 ] Success, displaying data:");
     Serial.print("Humidity: ");
     Serial.print(humidity);
@@ -42,6 +55,6 @@ void DHT22_class::data()
 
     Serial.println("[ DHT22 ] === End of DHT22 data ===");
     delay(5000);
-    return;
+    return data;
   }
 }
