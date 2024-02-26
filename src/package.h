@@ -7,6 +7,4 @@
 
 #define defaultBaud 115200
 
-// #include <TinyGsmClient.h>
-// #include <StreamDebugger.h>
 // #include <PubSubClient.h>

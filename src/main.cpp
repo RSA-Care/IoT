@@ -9,11 +9,11 @@ void setup()
 {
   Serial.begin(defaultBaud);
   Serial.println("\n=== > Setup Start < ===\n");
-  while (!modem.init(true) > 0)
-  {
-    Serial.println("Connection failed, restarting!");
-  }
-  modem.manualCommand();
+  // while (!modem.init() > 0)
+  // {
+  //   Serial.println("Connection failed, restarting!");
+  // }
+  // modem.manualCommand();
 
   delay(500);
   Serial.println("\n|===== Setup completed =====|");
@@ -23,6 +23,9 @@ void loop()
 {
   // DHT22 code
   auto dhtData = dht.getData();
+  String gps = modem.getGPS();
+
+  Serial.println(gps);
 
   // GPS code
   // while (gpsSerial.available() > 0)

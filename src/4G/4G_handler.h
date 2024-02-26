@@ -5,7 +5,7 @@
 #define TINY_GSM_USE_WIFI false
 #define GSM_AUTOBAUD_MIN 9600
 #define GSM_AUTOBAUD_MAX 115200
-#define DUMP_AT_COMMANDS true
+#define DUMP_AT_COMMANDS
 
 #define TINY_GSM_TEST_GPRS true
 #define TINY_GSM_TEST_TCP true
@@ -15,6 +15,7 @@
 #define TX_GSM 17
 #define defaultBaud 115200
 
+#include <TinyGSM.h>
 #include <TinyGsmClient.h>
 #include <HardwareSerial.h>
 #include <StreamDebugger.h>
@@ -33,9 +34,11 @@ class SIM7600G
 private:
   void debug();
   boolean _reset();
+  boolean gps_enabled = false;
 
 public:
   SIM7600G();
   boolean init(boolean reset = false);
+  String getGPS();
   void manualCommand();
 };
