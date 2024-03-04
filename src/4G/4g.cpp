@@ -14,7 +14,9 @@ TinyGsm _modem(SerialAT);
 // TinyGsm _modem(SerialAT);
 TinyGsmClient client(_modem);
 
-SIM7600G::SIM7600G() {}
+SIM7600G::SIM7600G()
+{
+}
 
 boolean SIM7600G::_reset()
 {
@@ -23,7 +25,21 @@ boolean SIM7600G::_reset()
 
 boolean SIM7600G::init(boolean reset)
 {
-  SerialAT.begin(defaultBaud, SERIAL_8N1, RX_GSM, TX_GSM, false);
+  int counter = 0;
+  while (SerialAT.available() == 0 && counter < 15)
+  {
+    SerialMon.println("Waiting for serial AT...");
+    SerialAT.begin(defaultBaud, SERIAL_8N1, RX_GSM, TX_GSM, false);
+    counter++;
+    delay(2000);
+  }
+
+  if (SerialAT.available() == 0)
+    return false;
+
+  _modem.sendAT("AT&V");
+  return true;
+  // SerialAT.begin(defaultBaud, SERIAL_8N1, RX_GSM, TX_GSM, false);
 
   if (_modem.isGprsConnected())
   {
@@ -117,10 +133,13 @@ String SIM7600G::getGPS()
   if (SerialAT.available() == 0)
   {
     SerialAT.begin(defaultBaud, SERIAL_8N1, RX_GSM, TX_GSM, false);
+    delay(500);
   }
 
-  if (_modem.enableGPS() && !gps_enabled)
+  if (!gps_enabled)
   {
+    _modem.enableGPS();
+    _modem.getGNSSMode();
     gps_enabled = true;
     SerialMon.println("GPS Enabled.");
   }
@@ -141,10 +160,4 @@ void SIM7600G::debug()
 
   if (Serial.available())
     SerialAT.write(Serial.read()); // Arduino send the SIMCOM 7000 feedback to computer
-}
-
-void SIM7600G::manualCommand()
-{
-  debug();
-  SerialAT.println("ATI");
 }

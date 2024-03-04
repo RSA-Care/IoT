@@ -49,6 +49,6 @@ void loop()
   //   delay(5000);
   // }
 
-  Serial.println("GPS Serial unavailable.");
+  // Serial.println("GPS Serial unavailable.");
   delay(5000);
 }
