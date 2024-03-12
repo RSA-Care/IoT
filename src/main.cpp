@@ -9,11 +9,14 @@ void setup()
 {
   Serial.begin(defaultBaud);
   Serial.println("\n=== > Setup Start < ===\n");
-  // while (!modem.init() > 0)
-  // {
-  //   Serial.println("Connection failed, restarting!");
-  // }
-  // modem.manualCommand();
+  int counter = 0;
+  while (!modem.init() > 0 && counter < 5)
+  {
+    Serial.print("[ ");
+    Serial.print(counter);
+    Serial.println(" ] Connection failed, restarting!");
+    counter++;
+  }
 
   delay(500);
   Serial.println("\n|===== Setup completed =====|");

@@ -1,6 +1,6 @@
 #include "dht_custom_header.h"
 
-#define pin 13
+#define pin 18
 #define type DHT22
 
 DHT _dht(pin, type);

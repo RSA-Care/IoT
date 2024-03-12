@@ -25,53 +25,49 @@ boolean SIM7600G::_reset()
 
 boolean SIM7600G::init(boolean reset)
 {
-  int counter = 0;
-  while (SerialAT.available() == 0 && counter < 15)
-  {
-    SerialMon.println("Waiting for serial AT...");
-    SerialAT.begin(defaultBaud, SERIAL_8N1, RX_GSM, TX_GSM, false);
-    counter++;
-    delay(2000);
-  }
-
-  if (SerialAT.available() == 0)
-    return false;
-
-  _modem.sendAT("AT&V");
-  return true;
-  // SerialAT.begin(defaultBaud, SERIAL_8N1, RX_GSM, TX_GSM, false);
-
-  if (_modem.isGprsConnected())
-  {
-    if (_modem.enableGPS())
-    {
-      SerialMon.println("GPS Enabled.");
-    }
-
-    return _modem.isGprsConnected();
-  }
-
-  delay(6000);
-
-  SerialMon.print("Setting Baud Rate to ");
-  SerialMon.println(defaultBaud);
-  _modem.setBaud(defaultBaud);
-  // TinyGsmAutoBaud(SerialAT, GSM_AUTOBAUD_MIN, GSM_AUTOBAUD_MAX); // use for testing
-
   if (reset)
   {
     SerialMon.println("Reseting the module...");
     _reset();
   }
 
-  delay(6000);
+  int counter = 0;
+  while (SerialAT.available() == 0 && counter < 5)
+  {
+    SerialMon.println("Waiting for serial AT...");
+    SerialAT.begin(defaultBaud, SERIAL_8N1, RX_GSM, TX_GSM, false);
+    SerialMon.println(SerialAT.available());
+    delay(3000);
+    counter++;
+  }
 
-  SerialMon.println("SerialAT Ready!");
+  if (SerialAT.available() == 0)
+    return false;
 
-  SerialMon.println("Initializing SIM7600G...");
-  _modem.init();
+  SerialMon.print("Setting Baud Rate to ");
+  SerialMon.println(defaultBaud);
+  _modem.setBaud(defaultBaud);
   delay(3000);
 
+  counter = 0;
+  SerialMon.println("Initializing SIM7600G...");
+  while (!_modem.init() && counter < 5)
+  {
+    SerialMon.print("[ ");
+    SerialMon.print(counter);
+    SerialMon.println(" ] Initializing SIM7600G...");
+    delay(3000);
+    counter++;
+  }
+  // _modem.init();
+  // _modem.restart();
+
+  return true;
+  // SerialAT.begin(defaultBaud, SERIAL_8N1, RX_GSM, TX_GSM, false);
+}
+
+boolean SIM7600G::connect()
+{
   SerialMon.print("Sim Card Status : ");
   SerialMon.println(_modem.getSimStatus());
   delay(3000);
@@ -95,37 +91,7 @@ boolean SIM7600G::init(boolean reset)
   }
   _modem.gprsConnect(apn);
 
-  if (_modem.waitResponse(10000L) != 1)
-  {
-    Serial.println("GPS FAIL");
-    // Serial.println("SGPIO=0,4,1,1 false ");
-  }
-  if (_modem.enableGPS())
-  {
-    SerialMon.println("[ + ] GPS Enabled.");
-  }
-  else
-  {
-    SerialMon.println("[ - ] GPS Disabled.");
-  }
-
-  // SerialMon.println("Setting mode for LTE");
-  // if (_modem.setNetworkMode(38) > 0)
-  // {
-  //   if (_modem.gprsConnect(apn) > 0)
-  //   {
-  //     SerialMon.println("Connected!");
-  //   }
-  //   break;
-  // }
-  // else
-  // {
-  //   SerialMon.println("Failed!");
-  // }
-
-  // bool conn = _modem.isGprsConnected();
   return _modem.isGprsConnected();
-  // SerialMon.println((conn) ? "Connected" : "Failed");
 }
 
 String SIM7600G::getGPS()

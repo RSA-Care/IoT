@@ -40,5 +40,5 @@ public:
   SIM7600G();
   boolean init(boolean reset = false);
   String getGPS();
-  void manualCommand();
+  boolean connect();
 };
