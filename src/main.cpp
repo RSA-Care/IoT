@@ -4,54 +4,79 @@
 TinyGPSPlus gps;
 DHT22_class dht;
 SIM7600G modem;
+mqtt_handler mqtt;
+Antares antares;
+Oled display;
+
+struct _dat
+{
+  float lat = 0;
+  float lon = 0;
+  float temp = 0;
+  float hum = 0;
+};
 
 void setup()
 {
   Serial.begin(defaultBaud);
   Serial.println("\n=== > Setup Start < ===\n");
+
+  // Oled Init
+  display.init();
+  // display.alwaysPrintToDisplay();
+
   int counter = 0;
-  while (!modem.init() > 0 && counter < 5)
+  display.setHeader("SIM7600G");
+  display.debug("Initializing...");
+  while (!modem.init() && counter < 5)
   {
-    Serial.print("[ ");
-    Serial.print(counter);
-    Serial.println(" ] Connection failed, restarting!");
+    display.debug(F("Modem init failed, retrying..."));
+    delay(1000);
+    // Serial.print(F("[ "));
+    // Serial.print(counter);
+    // Serial.println(" ] Connection failed, restarting!");
     counter++;
   }
 
-  delay(500);
-  Serial.println("\n|===== Setup completed =====|");
+  display.debug("Connecting to WiFi...");
+  if (!modem.getNetworkStatus())
+  {
+    if (mqtt.setupWIFI())
+    {
+      // Serial.println("WiFi Connected!");
+      display.debug(F("Connected to WiFi!"));
+    }
+    else
+    {
+      // Serial.println("WiFi connection Failed!");
+      display.debug(F("Failed to connect to WiFi!"));
+    }
+  }
+
+  display.setHeader(F("Antares"));
+  antares.init();
+
+  delay(2000);
+  // Serial.println("\n|===== Setup completed =====|");
+  display.setHeader(F("Setup completed!"));
 }
 
 void loop()
 {
+  _dat data;
+
   // DHT22 code
   auto dhtData = dht.getData();
   String gps = modem.getGPS();
+  data.temp = dhtData.temperature;
+  data.hum = dhtData.humidity;
+  data.lat = -6;
+  data.lon = 75;
+
+  antares.publish(true);
+
+  // mqtt.publish(gps, dhtData.temperature, dhtData.temperature);
 
   Serial.println(gps);
-
-  // GPS code
-  // while (gpsSerial.available() > 0)
-  // {
-  //   if (gps.encode(gpsSerial.read()))
-  //   {
-  //     Serial.print("Latitude: ");
-  //     Serial.println(gps.location.lat());
-  //     Serial.print("Longitude: ");
-  //     Serial.println(gps.location.lng());
-  //     Serial.write(gpsSerial.read());
-  //   }
-
-  //   if (millis() > 5000 && gps.charsProcessed() < 10)
-  //   {
-  //     Serial.println(F("[ Neo 7m ] No GPS detected: check wiring."));
-  //   }
-
-  //   auto dhtData = dht.getData();
-
-  //   delay(5000);
-  // }
-
-  // Serial.println("GPS Serial unavailable.");
   delay(5000);
 }

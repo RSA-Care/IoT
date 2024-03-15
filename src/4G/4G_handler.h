@@ -15,6 +15,8 @@
 #define TX_GSM 17
 #define defaultBaud 115200
 
+#define PWRKEY GPIO_NUM_19
+
 #include <TinyGSM.h>
 #include <TinyGsmClient.h>
 #include <HardwareSerial.h>
@@ -25,20 +27,20 @@ const char apn[] = "M2MINTERNET";
 const char gprsUser[] = "";
 const char gprsPass[] = "";
 
-// Your WiFi connection credentials, if applicable
-const char wifiSSID[] = "YourSSID";
-const char wifiPass[] = "YourWiFiPass";
-
 class SIM7600G
 {
 private:
   void debug();
+  void info();
   boolean _reset();
+  boolean networkConnected = false;
   boolean gps_enabled = false;
 
 public:
   SIM7600G();
-  boolean init(boolean reset = false);
+  void togglePWR();
+  bool init(boolean reset = false);
+  bool getNetworkStatus();
+  bool connect();
   String getGPS();
-  boolean connect();
 };

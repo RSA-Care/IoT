@@ -3,16 +3,25 @@
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
 
-#define screenAddr 0x3D
-#define OLED_RESET -1
+#define SCREEN_ADDRESS 0x3D
+#define OLED_RESET -1    // Reset pin # (or -1 if sharing Arduino reset pin)
 #define SCREEN_WIDTH 128 // OLED display width, in pixels
 #define SCREEN_HEIGHT 64 // OLED display height, in pixels
 
 class Oled
 {
 private:
-  /* data */
+  void testScreen();
+  void resetToTop();
+  void printHeader();
+  String headerName;
+  bool nameChange = false;
+  bool _state = true;
+
 public:
   Oled();
-  void oledPrint(String text);
+  bool init();
+  void setHeader(String name);
+  void debug(String text);
+  void alwaysPrintToDisplay(boolean state = true);
 };
