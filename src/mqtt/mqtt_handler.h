@@ -1,16 +1,29 @@
 #include <WiFi.h>
+#include <PubSubClient.h>
+#include <WiFiClient.h>
+#include <WiFiClientSecure.h>
 
-#define _SSID "bahagia permai"
-#define _PASS "imut2023"
+// #define _SSID "Ahda's"
+// #define _PASS "@hotspot.Personal"
 
-class mqtt_handler
+// #define _SSID "bahagia permai"
+// #define _PASS "imut2023"
+
+class MQTTHandler
 {
 private:
   bool checkWIFI();
+  const char *_SSID;
+  const char *_PASS;
   boolean useWIFI = false;
+  String errorStatus;
+  // void println(String text);
 
 public:
-  mqtt_handler();
+  MQTTHandler(const char *SSID, const char *PASS);
+  String getStatus();
   bool setupWIFI();
+  bool MQTTconnect(boolean test = false);
+  bool publish();
   bool publish(String gps, float temperature, float humidity);
 };

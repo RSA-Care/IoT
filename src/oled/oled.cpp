@@ -8,6 +8,12 @@ Oled::Oled()
 
 void Oled::testScreen()
 {
+  Wire.begin();
+  if (!_display.begin(SSD1306_SWITCHCAPVCC, SCREEN_ADDRESS))
+  {
+    Serial.println(F("SSD1306 allocation failed"));
+  }
+
   Serial.println("Testing display");
   _display.clearDisplay();
 
@@ -96,9 +102,22 @@ void Oled::setHeader(String name)
 
 void Oled::debug(String text)
 {
-  resetToTop();
+  // resetToTop();
+  delay(1000);
   Serial.println(text);
   _display.println(text);
   _display.display();
   delay(1000);
+}
+
+void Oled::print(String text)
+{
+  _display.print(text);
+  _display.display();
+}
+
+void Oled::println(String text)
+{
+  _display.println(text);
+  _display.display();
 }

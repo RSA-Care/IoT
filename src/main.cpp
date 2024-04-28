@@ -1,12 +1,17 @@
 
 #include "package.h"
 
-TinyGPSPlus gps;
+#define _SSID "Ahda's"
+#define _PASS "@hotspot.Personal"
+
+// #define _SSID "bahagia permai"
+// #define _PASS "imut2023"
+
+Oled display;
 DHT22_class dht;
 SIM7600G modem;
-mqtt_handler mqtt;
+MQTTHandler mqtt(_SSID, _PASS);
 Antares antares;
-Oled display;
 
 struct _dat
 {
@@ -25,40 +30,50 @@ void setup()
   display.init();
   // display.alwaysPrintToDisplay();
 
-  int counter = 0;
+  display.setHeader("WiFi");
+  display.println("Connecting to WiFi. Please wait...");
+  if (mqtt.setupWIFI())
+  {
+    // Serial.println("WiFi Connected!");
+    display.debug(F("Connected to WiFi!"));
+    IPAddress IP = WiFi.localIP();
+    String SSID_NAME = WiFi.SSID();
+    display.debug("SSID : " + SSID_NAME);
+    display.debug("LOCAL IP : ");
+    display.debug(IP.toString());
+    delay(5000);
+  }
+  else
+  {
+    // Serial.println("WiFi connection Failed!");
+    display.debug(F("Failed to connect to WiFi!"));
+  }
+
   display.setHeader("SIM7600G");
   display.debug("Initializing...");
-  while (!modem.init() && counter < 5)
+  bool status4G = modem.init();
+  display.debug(status4G ? F("Ready") : F("Fail"));
+  display.debug("SIM7600G Initialized.");
+
+  // display.setHeader(F("Antares"));
+  // antares.init();
+
+  display.setHeader(F("MQTT Broker."));
+  int counter = 0;
+  display.print(F("Connecting MQTT Server..."));
+  while (!mqtt.MQTTconnect() && counter < 5)
   {
-    display.debug(F("Modem init failed, retrying..."));
-    delay(1000);
-    // Serial.print(F("[ "));
-    // Serial.print(counter);
-    // Serial.println(" ] Connection failed, restarting!");
+    display.print(".");
     counter++;
   }
+  display.println();
 
-  display.debug("Connecting to WiFi...");
-  if (!modem.getNetworkStatus())
-  {
-    if (mqtt.setupWIFI())
-    {
-      // Serial.println("WiFi Connected!");
-      display.debug(F("Connected to WiFi!"));
-    }
-    else
-    {
-      // Serial.println("WiFi connection Failed!");
-      display.debug(F("Failed to connect to WiFi!"));
-    }
-  }
+  display.println(mqtt.getStatus());
 
-  display.setHeader(F("Antares"));
-  antares.init();
-
-  delay(2000);
+  delay(5000);
   // Serial.println("\n|===== Setup completed =====|");
   display.setHeader(F("Setup completed!"));
+  display.debug("===== Completed =====");
 }
 
 void loop()
@@ -73,7 +88,7 @@ void loop()
   data.lat = -6;
   data.lon = 75;
 
-  antares.publish(true);
+  // antares.publish(true);
 
   // mqtt.publish(gps, dhtData.temperature, dhtData.temperature);
 

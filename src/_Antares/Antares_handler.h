@@ -5,8 +5,8 @@
 #define DEVICE "Testing"
 
 // Use for testing only
-#define _SSID "bahagia permai"
-#define _PASS "imut2023"
+// #define _SSID "bahagia permai"
+// #define _PASS "imut2023"
 
 class Antares
 {

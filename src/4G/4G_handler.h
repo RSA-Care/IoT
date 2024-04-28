@@ -23,7 +23,7 @@
 #include <StreamDebugger.h>
 
 // Your GPRS credentials, if any
-const char apn[] = "M2MINTERNET";
+const char apn[] = "internet";
 const char gprsUser[] = "";
 const char gprsPass[] = "";
 
@@ -32,15 +32,20 @@ class SIM7600G
 private:
   void debug();
   void info();
+  bool serialATConnect();
+  bool _connect2g();
   boolean _reset();
   boolean networkConnected = false;
   boolean gps_enabled = false;
+  boolean startUp = false;
+  const char *modemInfo;
 
 public:
   SIM7600G();
   void togglePWR();
   bool init(boolean reset = false);
-  bool getNetworkStatus();
-  bool connect();
+  bool connect(boolean connet_2g = false);
   String getGPS();
+  String getInfo();
+  bool getNetworkStatus();
 };

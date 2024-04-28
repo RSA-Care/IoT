@@ -2,7 +2,7 @@
 
 const char *broker = "broker.hivemq.com"; // MQTT Credential
 
-HardwareSerial SerialAT(2);
+HardwareSerial SerialAT(1);
 
 #ifdef DUMP_AT_COMMANDS
 StreamDebugger debugger(SerialAT, SerialMon);
@@ -28,9 +28,7 @@ boolean SIM7600G::_reset()
 
 void SIM7600G::info()
 {
-  _modem.getGNSSMode();
-  String imei = _modem.getIMEI();
-  // String modemInfo = _modem.getModemInfo();
+  modemInfo = _modem.getModemInfo().c_str();
   boolean isNetworkConnected = _modem.isNetworkConnected();
   IPAddress ip;
   if (isNetworkConnected)
@@ -38,10 +36,6 @@ void SIM7600G::info()
 
   delay(2000);
   SerialMon.println(F("\n-------------------------------"));
-  SerialMon.print(F("IMEI: "));
-  SerialMon.println(imei);
-  delay(1000);
-
   SerialMon.print(F("Modem info: "));
   _modem.getModemInfo();
 
@@ -52,6 +46,10 @@ void SIM7600G::info()
     SerialMon.print(F("IP: "));
     SerialMon.print(ip[0], DEC);
     SerialMon.println('.');
+  }
+  else
+  {
+    SerialMon.println("Not connected to network");
   }
 
   SerialMon.println(F("-------------------------------"));
@@ -68,6 +66,9 @@ void SIM7600G::togglePWR()
 
 bool SIM7600G::init(boolean reset)
 {
+  SerialMon.println("Preparing for SIM7600G power on.");
+  delay(14000);
+
   if (reset)
   {
     SerialMon.println("Reseting the module...");
@@ -84,53 +85,77 @@ bool SIM7600G::init(boolean reset)
     counter++;
   }
 
-  if (SerialAT.available() == 0)
-  {
-    SerialMon.println("\nERROR: Failed to initialize GSM modem!");
-    return false;
-  }
-
-  counter = 0;
-  SerialMon.println("\nInitializing SIM7600G...");
-  bool init = _modem.init();
-  while (!_modem.restart() && counter < 5 && !init)
-  {
-    SerialMon.print("[ ");
-    SerialMon.print(counter);
-    SerialMon.println(" ] Re-initializing SIM7600G...");
-    delay(3000);
-    counter++;
-  }
-  // _modem.init();
-  // _modem.restart();
-
-  SerialMon.println("Preparing for SIM7600G power on.");
-  delay(14000);
-
   SerialMon.print("Setting Baud Rate to ");
   SerialMon.println(defaultBaud);
   _modem.setBaud(defaultBaud);
   delay(3000);
 
+  // if (SerialAT.available() == 0)
+  // {
+  //   SerialMon.println("\nERROR: Failed to initialize GSM modem!");
+  //   return false;
+  // }
+
+  counter = 0;
+  SerialMon.println("\nInitializing SIM7600G...");
+  bool init = _modem.init();
+  // while (!_modem.restart() && counter < 5 && !init)
+  // {
+  //   SerialMon.print("[ ");
+  //   SerialMon.print(counter);
+  //   SerialMon.println(" ] Re-initializing SIM7600G...");
+  //   delay(3000);
+  //   counter++;
+  // }
+  // _modem.init();
+  // _modem.restart();
+
+  // SerialMon.print("Setting Baud Rate to ");
+  // SerialMon.println(defaultBaud);
+  // _modem.setBaud(defaultBaud);
+  // delay(3000);
+
   SerialMon.println("Enabling GPS...");
-  bool gpsEnabled = _modem.enableGPS();
-  if (gpsEnabled)
-  {
-    gps_enabled = gpsEnabled;
-    SerialMon.println("GPS enabled");
-  }
+  // bool gpsEnabled = _modem.enableGPS();
+  // if (gpsEnabled)
+  // {
+  //   gps_enabled = gpsEnabled;
+  //   SerialMon.println("GPS enabled");
+  // }
+
+  _modem.sendAT("+CGPS=1,3");
+  delay(500);
 
   info();
 
-  connect();
+  connect(true);
 
   SerialMon.println(F("============================="));
   return true;
   // SerialAT.begin(defaultBaud, SERIAL_8N1, RX_GSM, TX_GSM, false);
 }
 
-bool SIM7600G::connect()
+bool SIM7600G::_connect2g()
 {
+  SerialMon.println("Trying to connect to the network using GPRS...");
+
+  _modem.sendAT("+CNMP=48");
+  delay(5000);
+  _modem.gprsConnect(apn);
+  SerialMon.println(modemInfo);
+  return _modem.isNetworkConnected();
+}
+
+bool SIM7600G::connect(boolean connect_2g)
+{
+  if (connect_2g)
+  {
+    return _connect2g();
+  }
+
+  _modem.sendAT("+CNMP=38");
+  delay(2000);
+
   SerialMon.println("Socket parameter:");
   _modem.sendAT("+CIPCCFG=?");
   delay(3000);
@@ -143,11 +168,10 @@ bool SIM7600G::connect()
     counter++;
     delay(10000);
   }
-  // _modem.gprsConnect(apn);
 
   SerialMon.println();
 
-  if (!_modem.waitForNetwork(10000L))
+  if (!_modem.waitForNetwork(15000L))
   { // You may need lengthen this in poor service areas
     SerialMon.println(F(" [fail]"));
     SerialMon.println(F("************************"));
@@ -165,7 +189,7 @@ bool SIM7600G::connect()
 
 bool SIM7600G::getNetworkStatus()
 {
-  return networkConnected;
+  return _modem.isNetworkConnected();
 }
 
 String SIM7600G::getGPS()
@@ -195,11 +219,7 @@ String SIM7600G::getGPS()
   return _modem.getGPSraw();
 }
 
-void SIM7600G::debug()
+String SIM7600G::getInfo()
 {
-  if (SerialAT.available())
-    Serial.write(SerialAT.read()); // Arduino send the computer command to SIMCOM 7000
-
-  if (Serial.available())
-    SerialAT.write(Serial.read()); // Arduino send the SIMCOM 7000 feedback to computer
+  return modemInfo;
 }
