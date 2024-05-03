@@ -65,6 +65,7 @@ void setup()
   {
     display.print(".");
     counter++;
+    delay(1000);
   }
   display.println();
 

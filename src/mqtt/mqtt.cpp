@@ -4,11 +4,13 @@
 // const char *mqtt_user = "admin";
 // const char *mqtt_pass = "hivemq";
 
-const char *test_mqtt_server = "http://f6dea6546f094ce29468848d85af5038.s1.eu.hivemq.cloud";
+const char *mqtt_server = "http://f6dea6546f094ce29468848d85af5038.s1.eu.hivemq.cloud";
 const char *mqtt_user = "satria";
 const char *mqtt_pass = "gogombc23";
 
-const char *mqtt_server = "broker.hivemq.com";
+const char *topic = "info";
+
+const char *test_mqtt_server = "broker.hivemq.com";
 
 // const int port = 1883; // default mqtt port
 const int port = 8883; // TLS/SSL Port
@@ -33,7 +35,7 @@ bool MQTTHandler::checkWIFI()
     while (WiFi.status() != WL_CONNECTED && counter < 20)
     {
       Serial.print(".");
-      delay(500);
+      delay(1000);
       counter++;
     }
     Serial.println();
@@ -53,7 +55,7 @@ bool MQTTHandler::setupWIFI()
   delay(1000);
   Serial.print(F("SSID: "));
   Serial.println(_SSID);
-  WiFi.begin(_SSID, _PASS); // Connect to it with the credentials we got from the config.json
+  WiFi.begin(_SSID, _PASS); // Connecting to Wireless Network
   delay(1000);
 
   int counter = 0;
@@ -61,7 +63,7 @@ bool MQTTHandler::setupWIFI()
   while (WiFi.status() != WL_CONNECTED && counter < 15)
   {
     Serial.print(".");
-    delay(500);
+    delay(1000);
     counter++;
   }
   Serial.println();
@@ -77,12 +79,29 @@ bool MQTTHandler::setupWIFI()
   return useWIFI;
 }
 
+void callback(char *topic, byte *payload, unsigned int length)
+{
+
+  Serial.print("Message arrived [");
+  Serial.print(topic);
+  Serial.print("] ");
+  for (int i = 0; i < length; i++)
+  {
+    Serial.print((char)payload[i]);
+  }
+  Serial.println();
+
+  String ipAddress = WiFi.localIP().toString();
+  // client.publish(Communication2, ipAddress.c_str());
+}
+
 bool MQTTHandler::MQTTconnect(boolean test)
 {
-  if (test)
+  if (!test)
   {
     Serial.println("Using public MQTT broker.");
-    _mqtt_client.setServer(mqtt_server, 1883);
+    _mqtt_client.setServer(mqtt_server, port);
+    _mqtt_client.setCallback(callback);
     Serial.print("Using MQTT server : ");
     Serial.println(mqtt_server);
   }
@@ -95,7 +114,7 @@ bool MQTTHandler::MQTTconnect(boolean test)
     Serial.println(port);
   }
 
-  String clientId = "ESP8266Client-"; // Create a random client ID
+  String clientId = "ESP32Client-"; // Create a random client ID
   clientId += String(random(0xffff), HEX);
   _mqtt_client.connect(clientId.c_str(), mqtt_user, mqtt_pass);
 
@@ -168,6 +187,12 @@ bool MQTTHandler::MQTTconnect(boolean test)
 
   Serial.print("Client State : ");
   Serial.println(errorStatus);
+
+  // Subscribing to a topic to display the message
+  // if (_mqtt_client.connected())
+  // {
+  //   _mqtt_client.subscribe(topic);
+  // }
 
   return _mqtt_client.connected();
 }

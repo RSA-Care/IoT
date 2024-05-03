@@ -26,4 +26,5 @@ public:
   bool MQTTconnect(boolean test = false);
   bool publish();
   bool publish(String gps, float temperature, float humidity);
+  // void callback(char *topic, byte *payload, unsigned int length);
 };
