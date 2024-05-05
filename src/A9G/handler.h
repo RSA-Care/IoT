@@ -5,11 +5,13 @@
 
 #define defaultBaud 115200
 
-HardwareSerial a9gSerial(2);
+// HardwareSerial a9gSerial(2);
 
 class a9g
 {
 private:
+  void parseData(String buff);
+
 public:
   a9g();
   bool begin();

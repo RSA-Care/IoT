@@ -12,6 +12,7 @@ DHT22_class dht;
 SIM7600G modem;
 MQTTHandler mqtt(_SSID, _PASS);
 Antares antares;
+a9g sim;
 
 struct _dat
 {
@@ -28,7 +29,16 @@ void setup()
 
   // Oled Init
   display.init();
-  // display.alwaysPrintToDisplay();
+
+  // A9G
+  if (sim.begin())
+  {
+    Serial.println("A9G Connected.");
+  }
+  else
+  {
+    Serial.println("A9G Error: Failed to connect\nPlease check wiring.");
+  }
 
   display.setHeader("WiFi");
   display.println("Connecting to WiFi. Please wait...");
@@ -81,9 +91,10 @@ void loop()
 {
   _dat data;
 
-  // DHT22 code
+  // DHT22 c00000000000ode
   auto dhtData = dht.getData();
   String gps = modem.getGPS();
+  String a9g_gps = sim.getGPS();
   data.temp = dhtData.temperature;
   data.hum = dhtData.humidity;
   data.lat = -6;
