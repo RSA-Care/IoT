@@ -1,15 +1,15 @@
 
 #include "package.h"
 
-#define _SSID "Ahda's"
-#define _PASS "@hotspot.Personal"
+#define _SSID "Amirty"
+#define _PASS "Viol@17A"
 
 // #define _SSID "bahagia permai"
 // #define _PASS "imut2023"
 
 Oled display;
 DHT22_class dht;
-SIM7600G modem;
+// SIM7600G modem;
 MQTTHandler mqtt(_SSID, _PASS);
 Antares antares;
 a9g sim;
@@ -61,9 +61,9 @@ void setup()
 
   display.setHeader("SIM7600G");
   display.debug("Initializing...");
-  bool status4G = modem.init();
-  display.debug(status4G ? F("Ready") : F("Fail"));
-  display.debug("SIM7600G Initialized.");
+  // bool status4G = modem.init();
+  // display.debug(status4G ? F("Ready") : F("Fail"));
+  // display.debug("SIM7600G Initialized.");
 
   // display.setHeader(F("Antares"));
   // antares.init();
@@ -75,7 +75,7 @@ void setup()
   {
     display.print(".");
     counter++;
-    delay(1000);
+    delay(500);
   }
   display.println();
 
@@ -89,21 +89,16 @@ void setup()
 
 void loop()
 {
-  _dat data;
+  // Temp data for testing
+  float temp, hum;
+  float longitude, latitude;
 
-  // DHT22 c00000000000ode
-  auto dhtData = dht.getData();
-  String gps = modem.getGPS();
-  String a9g_gps = sim.getGPS();
-  data.temp = dhtData.temperature;
-  data.hum = dhtData.humidity;
-  data.lat = -6;
-  data.lon = 75;
+  temp = 30;
+  hum = 25;
+  longitude = -6.9692767;
+  latitude = 107.6255821;
 
-  // antares.publish(true);
-
-  // mqtt.publish(gps, dhtData.temperature, dhtData.temperature);
-
-  Serial.println(gps);
+  Serial.println("Sending data.");
+  mqtt.publish(longitude, latitude, temp, hum);
   delay(5000);
 }

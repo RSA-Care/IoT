@@ -3,16 +3,13 @@
 #include <WiFiClient.h>
 #include <WiFiClientSecure.h>
 
-// #define _SSID "Ahda's"
-// #define _PASS "@hotspot.Personal"
-
-// #define _SSID "bahagia permai"
-// #define _PASS "imut2023"
-
 class MQTTHandler
 {
 private:
+  String clientId;
   bool checkWIFI();
+  String stateCheck();
+  void reconnect();
   const char *_SSID;
   const char *_PASS;
   boolean useWIFI = false;
@@ -24,7 +21,7 @@ public:
   String getStatus();
   bool setupWIFI();
   bool MQTTconnect(boolean test = false);
-  bool publish();
-  bool publish(String gps, float temperature, float humidity);
+  // bool publish();
+  bool publish(float longitude, float latitude, float temperature, float humidity);
   // void callback(char *topic, byte *payload, unsigned int length);
 };
