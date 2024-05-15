@@ -6,7 +6,7 @@
 
 const char *public_broker = "broker.hivemq.com";
 
-const char *mqtt_server = "35.224.42.35";
+const char *mqtt_server = "35.209.3.73";
 // const char *mqtt_server = "http://f6dea6546f094ce29468848d85af5038.s1.eu.hivemq.cloud";
 const char *mqtt_user = "admin";
 const char *mqtt_pass = "hivemq";
